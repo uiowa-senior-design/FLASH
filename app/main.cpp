@@ -2,7 +2,6 @@
 #include "SonarMesh.h"
 
 #include <Arduino.h> // needed for PlatformIO
-#include <Wire.h>
 #include <target.h>
 
 #ifndef LORA_CR
@@ -22,7 +21,7 @@ SimpleMeshTables tables;
 SonarMesh the_mesh(radio_driver, fast_rng, rtc_clock, tables);
 MB7389 sonar;
 
-unsigned long next_send_at = 0;
+unsigned long last_sent_at = 0;   // 0 = nothing sent yet
 bool was_connected = false;
 
 // The sensor counts as connected if it has sent a reading recently
@@ -30,12 +29,19 @@ bool sensorConnected() {
   return sonar.getLastReadAt() > 0 && millis() - sonar.getLastReadAt() < SONAR_TIMEOUT_MS;
 }
 
+// Fatal error: blink the red LED for 5 seconds, then reboot and try again
 void halt() {
-  while (1)
-    ;
+  for (int i = 0; i < 25; i++) {
+    digitalWrite(LED_RED, LOW);    // on
+    delay(100);
+    digitalWrite(LED_RED, HIGH);   // off
+    delay(100);
+  }
+  NVIC_SystemReset();
 }
 
 void setup() {
+  // Status LEDs (active LOW): green = starting board, blue = starting radio, both off = running
   pinMode(LED_GREEN, OUTPUT);
   pinMode(LED_RED, OUTPUT);
   pinMode(LED_BLUE, OUTPUT);
@@ -58,17 +64,13 @@ void setup() {
   radio_driver.setParams(LORA_FREQ, LORA_BW, LORA_SF, LORA_CR);
   radio_driver.setTxPower(LORA_TX_POWER);
 
-  // Serial1 uses D6 (TX) / D7 (RX), the same pins as I2C on this board,
-  // so release I2C before starting the UART.
+  // MB7389 output -> D7 (Serial1 RX). I2C is disabled (DISABLE_WIRE) since it shares these pins.
   Serial1.begin(9600);
-  while (!Serial1)
-    ;
   sonar.begin(Serial1);
 
   if(Serial){
     Serial.println("Sonar sensor started");
   }
-  digitalWrite(LED_GREEN, HIGH);
   digitalWrite(LED_BLUE, HIGH);
 }
 
@@ -83,8 +85,9 @@ void loop() {
 
   if (connected) {
     // Sender: broadcast the latest reading every SONAR_SEND_INTERVAL_MS
-    if (millis() >= next_send_at) {
-      next_send_at = millis() + SONAR_SEND_INTERVAL_MS;
+    // (subtracting timestamps stays correct when millis() wraps around after ~49 days)
+    if (last_sent_at == 0 || millis() - last_sent_at >= SONAR_SEND_INTERVAL_MS) {
+      last_sent_at = millis();
       Serial.print("TX distance: ");
       Serial.print(sonar.getDistanceMM());
       Serial.println(" mm");
