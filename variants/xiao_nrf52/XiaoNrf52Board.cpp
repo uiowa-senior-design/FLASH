@@ -44,11 +44,13 @@ void XiaoNrf52Board::begin() {
   pinMode(PIN_USER_BTN, INPUT_PULLUP);
 #endif
 
+#ifndef DISABLE_WIRE   // set when D6/D7 are used for Serial1 instead of I2C
 #if defined(PIN_WIRE_SDA) && defined(PIN_WIRE_SCL)
   Wire.setPins(PIN_WIRE_SDA, PIN_WIRE_SCL);
 #endif
 
   Wire.begin();
+#endif
 
 #ifdef P_LORA_TX_LED
   pinMode(P_LORA_TX_LED, OUTPUT);

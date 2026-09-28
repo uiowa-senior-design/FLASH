@@ -4,7 +4,7 @@
 #include <RadioLib.h>
 #include <helpers/radiolib/RadioLibWrappers.h>
 #include <XiaoNrf52Board.h>
-#include <helpers/radiolib/CustomSX1262Wrapper.h>
+#include <helpers/radiolib/CustomLR1121Wrapper.h>
 #include <helpers/AutoDiscoverRTCClock.h>
 #include <helpers/ArduinoHelpers.h>
 #include <helpers/sensors/EnvironmentSensorManager.h>
