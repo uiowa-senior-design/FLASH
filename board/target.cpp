@@ -23,7 +23,8 @@ EnvironmentSensorManager sensors;
 #endif
 
 #ifdef RF_SWITCH_TABLE
-// Values taken from the Seeed Wio-WM1110 - check these against your LR1121 module's schematic
+// Radio: Waveshare Core1121-HF (LR1121). Table copied from the Seeed Wio-WM1110 and confirmed
+// working on the Core1121-HF for sub-GHz; Waveshare does not publish its own table.
 static const uint32_t rfswitch_dios[Module::RFSWITCH_MAX_PINS] = {
   RADIOLIB_LR11X0_DIO5,
   RADIOLIB_LR11X0_DIO6,

@@ -62,7 +62,7 @@ void XiaoNrf52Board::begin() {
   checkBootVoltage(&power_config);
 #endif
 
-  delay(10);  // Give sx1262 some time to power up
+  delay(10);  // Give the radio some time to power up
 }
 
 uint16_t XiaoNrf52Board::getBattMilliVolts() {
