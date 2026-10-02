@@ -97,12 +97,15 @@ void loop() {
     // Receiver: print readings from other nodes
     uint16_t distance_mm;
     float snr;
-    if (the_mesh.getReceivedDistance(distance_mm, snr)) {
+    uint8_t hops;
+    if (the_mesh.getReceivedDistance(distance_mm, snr, hops)) {
       Serial.print("RX distance: ");
       Serial.print(distance_mm);
       Serial.print(" mm  (SNR ");
       Serial.print(snr);
-      Serial.println(")");
+      Serial.print(", ");
+      Serial.print(hops);
+      Serial.println(" hops)");
     }
   }
 
